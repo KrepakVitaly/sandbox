@@ -1,26 +1,28 @@
-KERNELRELEASE	?= `uname -r`
-KERNEL_DIR	?= /lib/modules/$(KERNELRELEASE)/build
-PWD		:= $(shell pwd)
-obj-m		:= dummy_videodev.o
+ifeq ($(KERNELRELEASE),)
 
+    # Assume the source tree is where the running kernel was built
+    # You should set KERNELDIR in the environment if it's elsewhere
+    KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+    # The current directory is passed to sub-makes as argument
+    PWD := $(shell pwd)
 
+modules:
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
+	rm -rf ./.tmp*
 
-PREFIX ?= /usr/local
-BINDIR  = $(PREFIX)/bin
-MANDIR  = $(PREFIX)/share/man
-MAN1DIR = $(MANDIR)/man1
-INSTALL = install
-INSTALL_PROGRAM = $(INSTALL) -p -m 755
-INSTALL_DIR     = $(INSTALL) -p -m 755 -d
-INSTALL_DATA    = $(INSTALL) -m 644
-MODULE_OPTIONS = devices=1
-
-
-all:
-	@echo "Building dummy_videodev v4l2 device driver..."
-	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
+modules_install:
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install
 	rm -rf ./.tmp*
 
 clean:
 	@echo "Clean..."
+	rm -rf ./.tmp*
+	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions *.mod modules.order *.symvers
+	rm *.o.rc
 
+.PHONY: modules modules_install clean
+
+else
+    # called from kernel build system: just declare what our modules are
+    obj-m +=  dummy_videodev.o
+endif
