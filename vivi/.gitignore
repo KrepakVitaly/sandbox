@@ -1,0 +1,10 @@
+*.ko
+*.o
+*.cmd
+*.mod
+*.mod.c
+*.mod.o
+*.symvers
+*.order
+*.cache.mk
+*.vscode
